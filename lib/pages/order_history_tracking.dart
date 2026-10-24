@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'favorites.dart';
 
 class OrderHistoryAndTracking extends StatefulWidget {
   const OrderHistoryAndTracking({super.key});
@@ -71,7 +72,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Title & Back Button
+                    // Header Title & Back Button & Favorite Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,17 +115,30 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                             ),
                           ],
                         ),
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: textMuted.withOpacity(0.4)),
-                          ),
-                          child: const Icon(
-                            Icons.help_outline,
-                            size: 18,
-                            color: textDark,
+                        
+                        // IKON FAVORIT DENGAN NAVIGASI KE FAVORITES
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const Favorites(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: textMuted.withOpacity(0.3)),
+                            ),
+                            child: const Icon(
+                              Icons.favorite_border,
+                              size: 18,
+                              color: textDark,
+                            ),
                           ),
                         ),
                       ],
@@ -409,7 +423,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
               ),
             ),
 
-            // Bottom Navigation Bar (Fixed 72px, Border Top 1px #DDDCD5 dari Figma)
+            // Bottom Navigation Bar
             Container(
               height: 72,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -516,8 +530,16 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
     return GestureDetector(
       onTap: () {
         if (index == 2) {
-          // Jika tab Sell diklik, kembalikan ke Add Product
+          // Tab Sell diklik -> kembali ke Add Product
           Navigator.pop(context);
+        } else if (index == 4) {
+          // Tab Profile diklik -> buka Favorites
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Favorites(),
+            ),
+          );
         } else {
           setState(() => _currentBottomNav = index);
         }

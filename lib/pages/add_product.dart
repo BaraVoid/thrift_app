@@ -39,14 +39,26 @@ class _AddProductState extends State<AddProduct> {
     'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500',
   ];
 
+  // Simulasi tambah foto untuk eksplorasi ListView.builder (M06)
+  void _addSamplePhoto() {
+    if (_photos.length < 6) {
+      setState(() {
+        _photos.add('https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // M07: MediaQuery untuk ukuran layar & responsivitas
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar (Fixed 44px seragam dengan Order History)
+            // Status bar
             Container(
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -115,273 +127,313 @@ class _AddProductState extends State<AddProduct> {
               ),
             ),
 
-            // Listing content (Scrollable body)
+            // Listing content dengan M07 LayoutBuilder (Adaptive Constraint)
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Photos header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          'Photos',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textDark,
-                          ),
-                        ),
-                        Text(
-                          '3 / 6 uploaded',
-                          style: TextStyle(fontSize: 13, color: textMuted),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Membatasi lebar form di tablet/desktop agar proporsional (M07)
+                  final double horizontalPad =
+                      constraints.maxWidth > 650 ? screenWidth * 0.15 : 20.0;
 
-                    SizedBox(
-                      height: 120,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          // GARIS PUTUS-PUTUS DOTTED BORDER NATIVE (ANTI-ERROR)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: CustomPaint(
-                              painter: _DashedBorderPainter(
-                                color: addPhotoBorder,
-                                strokeWidth: 1.5,
-                                radius: 16,
-                              ),
-                              child: Container(
-                                width: 95,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: addPhotoBg,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.camera_alt_outlined, color: primaryGreen, size: 26),
-                                    SizedBox(height: 6),
-                                    Text(
-                                      'Add Photo',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: primaryGreen,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPad, vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Photos header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Photos',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: textDark,
                               ),
                             ),
-                          ),
+                            Text(
+                              '${_photos.length} / 6 uploaded',
+                              style: const TextStyle(fontSize: 13, color: textMuted),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
 
-                          // Photos list
-                          ..._photos.asMap().entries.map((entry) {
-                            int idx = entry.key;
-                            String url = entry.value;
-                            return Container(
-                              width: 95,
-                              height: 120,
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: NetworkImage(url),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              child: idx == 0
-                                  ? Stack(
-                                      children: [
-                                        Positioned(
-                                          bottom: 8,
-                                          left: 8,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: primaryGreen.withOpacity(0.85),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: const Text(
-                                              'COVER',
+                        // M06: Horizontal ListView.builder untuk koleksi foto dinamis
+                        SizedBox(
+                          height: 120,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _photos.length + 1, // +1 untuk tombol Add Photo
+                            itemBuilder: (context, index) {
+                              // Index 0: Tombol Add Photo dengan Custom Dashed Border
+                              if (index == 0) {
+                                return GestureDetector(
+                                  onTap: _addSamplePhoto,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: CustomPaint(
+                                      painter: _DashedBorderPainter(
+                                        color: addPhotoBorder,
+                                        strokeWidth: 1.5,
+                                        radius: 16,
+                                      ),
+                                      child: Container(
+                                        width: 95,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: addPhotoBg,
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: const Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.camera_alt_outlined,
+                                                color: primaryGreen, size: 26),
+                                            SizedBox(height: 6),
+                                            Text(
+                                              'Add Photo',
                                               style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
+                                                color: primaryGreen,
                                               ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              // Index berikutnya: Foto yang sudah diunggah
+                              final int photoIdx = index - 1;
+                              final String url = _photos[photoIdx];
+                              return Container(
+                                width: 95,
+                                height: 120,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  image: DecorationImage(
+                                    image: NetworkImage(url),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                // M06: Stack + Positioned untuk badge COVER & tombol hapus
+                                child: Stack(
+                                  children: [
+                                    if (photoIdx == 0)
+                                      Positioned(
+                                        bottom: 8,
+                                        left: 8,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: primaryGreen.withValues(alpha: 0.85),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Text(
+                                            'COVER',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    )
-                                  : null,
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Show front, back, label, and every flaw in bright natural light.',
-                      style: TextStyle(fontSize: 12, color: textMuted),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Title
-                    _buildLabel('Title'),
-                    _buildInputField(controller: _titleController),
-                    const SizedBox(height: 14),
-
-                    // Brand & Category
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Brand'),
-                              _buildInputField(controller: _brandController),
-                            ],
+                                      ),
+                                    if (_photos.length > 1)
+                                      Positioned(
+                                        top: 6,
+                                        right: 6,
+                                        child: GestureDetector(
+                                          onTap: () => setState(() => _photos.removeAt(photoIdx)),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(3),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withValues(alpha: 0.5),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(Icons.close,
+                                                size: 12, color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Category'),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: fieldBorderColor),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Show front, back, label, and every flaw in bright natural light.',
+                          style: TextStyle(fontSize: 12, color: textMuted),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Title
+                        _buildLabel('Title'),
+                        _buildInputField(controller: _titleController),
+                        const SizedBox(height: 14),
+
+                        // Brand & Category (M06: Row + Expanded)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLabel('Brand'),
+                                  _buildInputField(controller: _brandController),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLabel('Category'),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: fieldBorderColor),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: _selectedCategory,
+                                        isExpanded: true,
+                                        icon: const Icon(Icons.keyboard_arrow_down, color: textMuted),
+                                        items: ['Outerwear', 'Shirts', 'Pants', 'Shoes']
+                                            .map((cat) => DropdownMenuItem(
+                                                  value: cat,
+                                                  child: Text(
+                                                    cat,
+                                                    style: const TextStyle(
+                                                        fontSize: 14, color: textDark),
+                                                  ),
+                                                ))
+                                            .toList(),
+                                        onChanged: (val) => setState(() => _selectedCategory = val),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Price
+                        _buildLabel('Price'),
+                        _buildInputField(
+                          controller: _priceController,
+                          suffixText: 'IDR',
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Item Condition
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildLabel('Item Condition'),
+                            Text(
+                              '$_selectedCondition Good',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: primaryGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // M06 & M07: Expanded mencegah RenderFlex overflow pada chip kondisi
+                        Row(
+                          children: _conditions.asMap().entries.map((entry) {
+                            int idx = entry.key;
+                            String cond = entry.value;
+                            bool isSelected = _selectedCondition == cond;
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _selectedCondition = cond),
+                                child: Container(
+                                  margin: EdgeInsets.only(
+                                      right: idx == _conditions.length - 1 ? 0 : 8),
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? primaryGreen : Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: isSelected ? primaryGreen : fieldBorderColor,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      cond,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? Colors.white : textDark,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedCategory,
-                                    isExpanded: true,
-                                    icon: const Icon(Icons.keyboard_arrow_down, color: textMuted),
-                                    items: ['Outerwear', 'Shirts', 'Pants', 'Shoes']
-                                        .map((cat) => DropdownMenuItem(
-                                              value: cat,
-                                              child: Text(
-                                                cat,
-                                                style: const TextStyle(fontSize: 14, color: textDark),
-                                              ),
-                                            ))
-                                        .toList(),
-                                    onChanged: (val) => setState(() => _selectedCategory = val),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Warning note
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: warningBg,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.error_outline, color: warningText, size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Add honest flaws/minus notes to build buyer trust.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: warningText,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
+                        const SizedBox(height: 14),
 
-                    // Price
-                    _buildLabel('Price'),
-                    _buildInputField(
-                      controller: _priceController,
-                      suffixText: 'IDR',
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Item Condition
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildLabel('Item Condition'),
-                        Text(
-                          '$_selectedCondition Good',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: primaryGreen,
-                          ),
+                        // Description & Flaws
+                        _buildLabel('Description & Flaws'),
+                        _buildInputField(
+                          controller: _descController,
+                          maxLines: 3,
                         ),
+                        const SizedBox(height: 16),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: _conditions.map((cond) {
-                        bool isSelected = _selectedCondition == cond;
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedCondition = cond),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: isSelected ? primaryGreen : Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: isSelected ? primaryGreen : fieldBorderColor,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                cond,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected ? Colors.white : textDark,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Warning note
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: warningBg,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.error_outline, color: warningText, size: 18),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Add honest flaws/minus notes to build buyer trust.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: warningText,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Description & Flaws
-                    _buildLabel('Description & Flaws'),
-                    _buildInputField(
-                      controller: _descController,
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
@@ -399,7 +451,6 @@ class _AddProductState extends State<AddProduct> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // PINDAH KE ORDER HISTORY AND TRACKING
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -414,9 +465,9 @@ class _AddProductState extends State<AddProduct> {
                     ),
                     elevation: 0,
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         'Publish Listing',
                         style: TextStyle(
@@ -497,7 +548,6 @@ class _AddProductState extends State<AddProduct> {
   }
 }
 
-// PAINTER GARIS PUTUS-PUTUS DOTTED BORDER (100% FLUTTER NATIVE)
 class _DashedBorderPainter extends CustomPainter {
   final Color color;
   final double strokeWidth;

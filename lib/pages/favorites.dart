@@ -17,8 +17,29 @@ class _FavoritesState extends State<Favorites> {
   static const Color bottomBarBorder = Color(0xFFDDDCD5);
 
   int _currentBottomNav = 4;
+  int _currentBannerIndex = 0; // State untuk Carousel M06
+  final PageController _bannerController = PageController();
 
-  final List<Map<String, String>> _favoriteItems = [
+  // Data Carousel Banner (Materi M06)
+  final List _bannerTips = [
+    {
+      'icon': Icons.favorite_border,
+      'title': 'Good finds are worth keeping.',
+      'subtitle': "We'll let you know when a price drops.",
+    },
+    {
+      'icon': Icons.local_offer_outlined,
+      'title': 'Bundle & save on shipping.',
+      'subtitle': 'Buy 2+ pieces from the same closet for discounts.',
+    },
+    {
+      'icon': Icons.eco_outlined,
+      'title': 'Circular fashion matters.',
+      'subtitle': 'Every preloved piece saves water and carbon.',
+    },
+  ];
+
+  final List _favoriteItems = [
     {
       'brandSize': 'MUJI • M',
       'title': 'Linen Work Jacket',
@@ -54,7 +75,17 @@ class _FavoritesState extends State<Favorites> {
   ];
 
   @override
+  void dispose() {
+    _bannerController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // M07: Menggunakan MediaQuery untuk mendeteksi ukuran & orientasi layar
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -88,7 +119,7 @@ class _FavoritesState extends State<Favorites> {
               ),
             ),
 
-            // Top bar (Judul Ditebalkan)
+            // Top bar
             Container(
               height: 52,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -111,211 +142,109 @@ class _FavoritesState extends State<Favorites> {
                     'Your Favorites',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900, // Font Ekstra Tebal Presisi Figma
+                      fontWeight: FontWeight.w900,
                       color: textDark,
                       letterSpacing: -0.4,
                     ),
                   ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.favorite_border, color: textDark, size: 20),
+                  // M06: Stack + Positioned untuk Badge jumlah favorit
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.favorite_border, color: textDark, size: 20),
+                      ),
+                      if (_favoriteItems.isNotEmpty)
+                        Positioned(
+                          right: -2,
+                          top: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: primaryGreen,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${_favoriteItems.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
             ),
 
-            // Content
+            // Content dengan M07 LayoutBuilder (Adaptive UI)
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Green Banner
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: bannerBg,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.favorite_border, color: primaryGreen, size: 22),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Good finds are worth keeping.',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: textDark,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  "We'll let you know when a price drops.",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Jika layar lebar / landscape (>= 600px), gunakan 2 kolom GridView
+                  final bool useGrid = constraints.maxWidth >= 600 || isLandscape;
 
-                    // Saved Pieces Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth > 800 ? screenWidth * 0.1 : 20,
+                      vertical: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${_favoriteItems.length} saved pieces',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800, // Ditebalkan
-                            color: textDark,
-                          ),
-                        ),
-                        Row(
-                          children: const [
-                            Text(
-                              'Recently saved',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: textMuted,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Icon(Icons.keyboard_arrow_down, size: 18, color: textMuted),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Items List
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _favoriteItems.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final item = _favoriteItems[index];
-                        return Container(
-                          padding: const EdgeInsets.all(12),
+                        // M06: CAROUSEL BANNER (PageView.builder + Dot Indicator)
+                        Container(
+                          height: 76,
                           decoration: BoxDecoration(
-                            color: cardBg,
+                            color: bannerBg,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Row(
+                          child: Stack(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  item['image']!,
-                                  width: 85,
-                                  height: 85,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['brandSize']!,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: textMuted,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['title']!,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800, // Ditebalkan
-                                        color: textDark,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['condition']!,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
+                              PageView.builder(
+                                controller: _bannerController,
+                                itemCount: _bannerTips.length,
+                                onPageChanged: (idx) {
+                                  setState(() => _currentBannerIndex = idx);
+                                },
+                                itemBuilder: (context, index) {
+                                  final tip = _bannerTips[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          item['price']!,
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w800, // Ditebalkan
-                                            color: textDark,
-                                          ),
-                                        ),
-                                        if (item['oldPrice']!.isNotEmpty) ...[
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            item['oldPrice']!,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: textMuted,
-                                              decoration: TextDecoration.lineThrough,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: const [
-                                            Text(
-                                              'View item',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                                color: textDark,
-                                              ),
-                                            ),
-                                            SizedBox(width: 4),
-                                            Icon(Icons.arrow_forward, size: 12, color: textDark),
-                                          ],
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _favoriteItems.removeAt(index);
-                                            });
-                                          },
-                                          child: Row(
-                                            children: const [
-                                              Icon(Icons.close, size: 13, color: textMuted),
-                                              SizedBox(width: 2),
+                                        Icon(tip['icon'] as IconData, color: primaryGreen, size: 22),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
                                               Text(
-                                                'Remove',
-                                                style: TextStyle(
+                                                tip['title'] as String,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textDark,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                tip['subtitle'] as String,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
                                                   fontSize: 12,
                                                   color: textMuted,
                                                 ),
@@ -325,16 +254,91 @@ class _FavoritesState extends State<Favorites> {
                                         ),
                                       ],
                                     ),
-                                  ],
+                                  );
+                                },
+                              ),
+                              // Indikator titik Carousel
+                              Positioned(
+                                bottom: 6,
+                                right: 14,
+                                child: Row(
+                                  children: List.generate(_bannerTips.length, (dotIndex) {
+                                    bool active = _currentBannerIndex == dotIndex;
+                                    return Container(
+                                      width: active ? 12 : 5,
+                                      height: 5,
+                                      margin: const EdgeInsets.only(left: 4),
+                                      decoration: BoxDecoration(
+                                        color: active
+                                            ? primaryGreen
+                                            : primaryGreen.withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    );
+                                  }),
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Saved Pieces Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${_favoriteItems.length} saved pieces',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: textDark,
+                              ),
+                            ),
+                            const Row(
+                              children: [
+                                Text(
+                                  'Recently saved',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: textMuted,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.keyboard_arrow_down, size: 18, color: textMuted),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // M06 & M07: Adaptive ListView.builder (Portrait) vs GridView.builder (Landscape/Tablet)
+                        if (useGrid)
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              mainAxisExtent: 122,
+                            ),
+                            itemCount: _favoriteItems.length,
+                            itemBuilder: (context, index) => _buildFavoriteCard(index),
+                          )
+                        else
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _favoriteItems.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) => _buildFavoriteCard(index),
+                          ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
@@ -361,6 +365,133 @@ class _FavoritesState extends State<Favorites> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteCard(int index) {
+    final item = _favoriteItems[index];
+    final String oldPrice = item['oldPrice'] as String;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              item['image'] as String,
+              width: 85,
+              height: 85,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  item['brandSize'] as String,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: textMuted,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item['title'] as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item['condition'] as String,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: textMuted,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      item['price'] as String,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: textDark,
+                      ),
+                    ),
+                    if (oldPrice.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        oldPrice,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: textMuted,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Text(
+                          'View item',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: textDark,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(Icons.arrow_forward, size: 12, color: textDark),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _favoriteItems.removeAt(index);
+                        });
+                      },
+                      child: const Row(
+                        children: [
+                          Icon(Icons.close, size: 13, color: textMuted),
+                          SizedBox(width: 2),
+                          Text(
+                            'Remove',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

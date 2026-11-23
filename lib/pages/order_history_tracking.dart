@@ -26,12 +26,16 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
 
   @override
   Widget build(BuildContext context) {
+    // M07: MediaQuery untuk mendeteksi orientasi layar
+    final bool isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar (Fixed 44px dari Figma)
+            // Status bar
             Container(
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -60,366 +64,203 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
               ),
             ),
 
-            // Orders Content (Padding: Top 8, Right 20, Bottom 12, Left 20, Gap 14)
+            // Orders Content dengan M07 LayoutBuilder (Adaptive Layout)
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  top: 8,
-                  right: 20,
-                  bottom: 12,
-                  left: 20,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Title & Back Button & Favorite Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Jika layar lebar / landscape (>= 650px), layout split kiri-kanan
+                  final bool isWide = constraints.maxWidth >= 650 || isLandscape;
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.only(
+                      top: 8,
+                      right: 20,
+                      bottom: 12,
+                      left: 20,
+                    ),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Header Title & Back Button & Favorite Button
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                margin: const EdgeInsets.only(right: 10),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.chevron_left, color: textDark, size: 22),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: Container(
+                                      width: 36,
+                                      height: 36,
+                                      margin: const EdgeInsets.only(right: 10),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.chevron_left,
+                                          color: textDark, size: 22),
+                                    ),
+                                  ),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Your Orders',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: textDark,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          'Track every piece, from closet to closet.',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: textMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Your Orders',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: textDark,
+
+                            // M06: Stack + Positioned pada Ikon Favorit
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Favorites(),
                                   ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Track every piece, from closet to closet.',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: textMuted,
+                                );
+                              },
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: textMuted.withValues(alpha: 0.3)),
+                                    ),
+                                    child: const Icon(
+                                      Icons.favorite_border,
+                                      size: 18,
+                                      color: textDark,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 9,
+                                      height: 9,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFC86A4B),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                        
-                        // IKON FAVORIT DENGAN NAVIGASI KE FAVORITES
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Favorites(),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: textMuted.withOpacity(0.3)),
-                            ),
-                            child: const Icon(
-                              Icons.favorite_border,
-                              size: 18,
-                              color: textDark,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
+                        const SizedBox(height: 14),
 
-                    // Buyer / Seller Tab Switcher
-                    Container(
-                      height: 40,
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: tabBg,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedTab = 0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _selectedTab == 0 ? Colors.white : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Buyer',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: _selectedTab == 0 ? textDark : textMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
+                        // Buyer / Seller Tab Switcher
+                        Container(
+                          height: 40,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: tabBg,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedTab = 1),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _selectedTab == 1 ? Colors.white : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Seller',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: _selectedTab == 1 ? textDark : textMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Active Tracking Card (In Transit)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryGreen.withOpacity(0.3), width: 1.5),
-                      ),
-                      child: Column(
-                        children: [
-                          // Item Details & Status
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      'ORDER #TM10281',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: textMuted,
-                                        letterSpacing: 0.5,
-                                      ),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedTab = 0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: _selectedTab == 0
+                                          ? Colors.white
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'Olive Linen Work Jacket',
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      'Buyer',
                                       style: TextStyle(
+                                        fontWeight: FontWeight.bold,
                                         fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: textDark,
+                                        color: _selectedTab == 0
+                                            ? textDark
+                                            : textMuted,
                                       ),
                                     ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'Rp 203.000 total',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: textDark,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: badgeGreenBg,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'IN TRANSIT',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: badgeGreenText,
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedTab = 1),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: _selectedTab == 1
+                                          ? Colors.white
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      'Seller',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: _selectedTab == 1
+                                            ? textDark
+                                            : textMuted,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                        ),
+                        const SizedBox(height: 14),
 
-                          // Shipping Info Sub-card
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: primaryGreen,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.local_shipping_outlined,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'J&T Regular • JP0129847612',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: textDark,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Estimated Oct 3–4 • South Jakarta Hub',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: textMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.copy_outlined, size: 16, color: textMuted),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Timeline Tracking Progress
-                          _buildTimelineStep(
-                            title: 'Packed',
-                            subtitle: 'Seller packed your item',
-                            time: 'Oct 1 • 10:24',
-                            isCompleted: true,
-                            isLast: false,
-                          ),
-                          _buildTimelineStep(
-                            title: 'Shipped',
-                            subtitle: 'J&T picked up the parcel',
-                            time: 'Oct 1 • 17:40',
-                            isCompleted: true,
-                            isLast: false,
-                          ),
-                          _buildTimelineStep(
-                            title: 'Delivered',
-                            subtitle: 'Estimated arrival',
-                            time: 'Oct 3–4',
-                            isCompleted: false,
-                            isLast: true,
-                          ),
+                        // M07 Adaptive Layout: Row (Split 2 Kolom saat Wide) vs Column (Portrait)
+                        if (isWide)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 6, child: _buildActiveTrackingCard()),
+                              const SizedBox(width: 16),
+                              Expanded(flex: 5, child: _buildOrderHistorySection()),
+                            ],
+                          )
+                        else ...[
+                          _buildActiveTrackingCard(),
+                          const SizedBox(height: 20),
+                          _buildOrderHistorySection(),
                         ],
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-
-                    // Order History Section
-                    const Text(
-                      'Order History',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Past Order Card
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500',
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Pleated Midi Skirt',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: textDark,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Delivered Sep 18 • Rp 138.000',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Text(
-                            'DELIVERED',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: badgeGreenText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
@@ -450,7 +291,228 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
     );
   }
 
-  // Widget Pembantu Timeline
+  Widget _buildActiveTrackingCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryGreen.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ORDER #TM10281',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: textMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Olive Linen Work Jacket',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Rp 203.000 total',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeGreenBg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'IN TRANSIT',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: badgeGreenText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Shipping Info Sub-card
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: primaryGreen,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.local_shipping_outlined,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'J&T Regular • JP0129847612',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: textDark,
+                        ),
+                      ),
+                      Text(
+                        'Estimated Oct 3–4 • South Jakarta Hub',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.copy_outlined, size: 16, color: textMuted),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Timeline Tracking Progress
+          _buildTimelineStep(
+            title: 'Packed',
+            subtitle: 'Seller packed your item',
+            time: 'Oct 1 • 10:24',
+            isCompleted: true,
+            isLast: false,
+          ),
+          _buildTimelineStep(
+            title: 'Shipped',
+            subtitle: 'J&T picked up the parcel',
+            time: 'Oct 1 • 17:40',
+            isCompleted: true,
+            isLast: false,
+          ),
+          _buildTimelineStep(
+            title: 'Delivered',
+            subtitle: 'Estimated arrival',
+            time: 'Oct 3–4',
+            isCompleted: false,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Order History',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textDark,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500',
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pleated Midi Skirt',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Delivered Sep 18 • Rp 138.000',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                'DELIVERED',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: badgeGreenText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTimelineStep({
     required String title,
     required String subtitle,
@@ -470,7 +532,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                 shape: BoxShape.circle,
                 color: isCompleted ? primaryGreen : Colors.white,
                 border: Border.all(
-                  color: isCompleted ? primaryGreen : textMuted.withOpacity(0.5),
+                  color: isCompleted ? primaryGreen : textMuted.withValues(alpha: 0.5),
                   width: 2,
                 ),
               ),
@@ -479,7 +541,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
               Container(
                 width: 2,
                 height: 32,
-                color: isCompleted ? primaryGreen : textMuted.withOpacity(0.3),
+                color: isCompleted ? primaryGreen : textMuted.withValues(alpha: 0.3),
               ),
           ],
         ),
@@ -503,7 +565,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                     time,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isCompleted ? textMuted : textMuted.withOpacity(0.6),
+                      color: isCompleted ? textMuted : textMuted.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -520,7 +582,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
     );
   }
 
-  // Widget Pembantu Bottom Navigation
   Widget _buildNavItem({
     required IconData icon,
     required String label,
@@ -530,10 +591,8 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
     return GestureDetector(
       onTap: () {
         if (index == 2) {
-          // Tab Sell diklik -> kembali ke Add Product
           Navigator.pop(context);
         } else if (index == 4) {
-          // Tab Profile diklik -> buka Favorites
           Navigator.push(
             context,
             MaterialPageRoute(

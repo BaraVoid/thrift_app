@@ -10,7 +10,6 @@ class OrderHistoryAndTracking extends StatefulWidget {
 }
 
 class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
-  // Palet Warna dari Figma
   static const Color bgColor = Color(0xFFF8F6F0);
   static const Color primaryGreen = Color(0xFF2F3E33);
   static const Color cardBg = Colors.white;
@@ -21,12 +20,11 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
   static const Color badgeGreenText = Color(0xFF3F6244);
   static const Color bottomBarBorder = Color(0xFFDDDCD5);
 
-  int _selectedTab = 0; // 0: Buyer, 1: Seller
-  int _currentBottomNav = 3; // Selected index "Orders"
+  int _selectedTab = 0;
+  int _currentBottomNav = 3;
 
   @override
   Widget build(BuildContext context) {
-    // M07: MediaQuery untuk mendeteksi orientasi layar
     final bool isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
 
@@ -35,40 +33,40 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar
-            Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              alignment: Alignment.centerRight,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '9:41',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: textDark,
+            // Status bar hanya tampil saat Portrait
+            if (!isLandscape)
+              Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                alignment: Alignment.centerRight,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '9:41',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: textDark,
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.wifi, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.battery_full, size: 16, color: textDark),
-                    ],
-                  ),
-                ],
+                    Row(
+                      children: [
+                        Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.wifi, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.battery_full, size: 16, color: textDark),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // Orders Content dengan M07 LayoutBuilder (Adaptive Layout)
+            // Orders Content dengan LayoutBuilder
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Jika layar lebar / landscape (>= 650px), layout split kiri-kanan
                   final bool isWide = constraints.maxWidth >= 650 || isLandscape;
 
                   return SingleChildScrollView(
@@ -81,7 +79,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header Title & Back Button & Favorite Button
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +129,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                               ),
                             ),
 
-                            // M06: Stack + Positioned pada Ikon Favorit
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -242,7 +238,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
                         ),
                         const SizedBox(height: 14),
 
-                        // M07 Adaptive Layout: Row (Split 2 Kolom saat Wide) vs Column (Portrait)
                         if (isWide)
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,10 +259,10 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
               ),
             ),
 
-            // Bottom Navigation Bar
+            // Bottom Navigation Bar (lebih ramping saat landscape)
             Container(
-              height: 72,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              height: isLandscape ? 54 : 72,
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: isLandscape ? 4 : 8),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
@@ -277,11 +272,11 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildNavItem(icon: Icons.home_outlined, label: 'Home', index: 0),
-                  _buildNavItem(icon: Icons.search, label: 'Search', index: 1),
-                  _buildNavItem(icon: Icons.add_circle_outline, label: 'Sell', index: 2),
-                  _buildNavItem(icon: Icons.local_mall_outlined, label: 'Orders', index: 3),
-                  _buildNavItem(icon: Icons.person_outline, label: 'Profile', index: 4),
+                  _buildNavItem(icon: Icons.home_outlined, label: 'Home', index: 0, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.search, label: 'Search', index: 1, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.add_circle_outline, label: 'Sell', index: 2, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.local_mall_outlined, label: 'Orders', index: 3, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.person_outline, label: 'Profile', index: 4, isLandscape: isLandscape),
                 ],
               ),
             ),
@@ -366,8 +361,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
             ],
           ),
           const SizedBox(height: 14),
-
-          // Shipping Info Sub-card
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -416,8 +409,6 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Timeline Tracking Progress
           _buildTimelineStep(
             title: 'Packed',
             subtitle: 'Seller packed your item',
@@ -586,6 +577,7 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
     required IconData icon,
     required String label,
     required int index,
+    required bool isLandscape,
   }) {
     bool isSelected = _currentBottomNav == index;
     return GestureDetector(
@@ -609,13 +601,13 @@ class _OrderHistoryAndTrackingState extends State<OrderHistoryAndTracking> {
           Icon(
             icon,
             color: isSelected ? textDark : textMuted,
-            size: 22,
+            size: isLandscape ? 19 : 22,
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: isLandscape ? 10 : 11,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? textDark : textMuted,
             ),

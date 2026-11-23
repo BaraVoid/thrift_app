@@ -17,10 +17,9 @@ class _FavoritesState extends State<Favorites> {
   static const Color bottomBarBorder = Color(0xFFDDDCD5);
 
   int _currentBottomNav = 4;
-  int _currentBannerIndex = 0; // State untuk Carousel M06
+  int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
 
-  // Data Carousel Banner (Materi M06)
   final List _bannerTips = [
     {
       'icon': Icons.favorite_border,
@@ -82,7 +81,6 @@ class _FavoritesState extends State<Favorites> {
 
   @override
   Widget build(BuildContext context) {
-    // M07: Menggunakan MediaQuery untuk mendeteksi ukuran & orientasi layar
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
@@ -91,37 +89,38 @@ class _FavoritesState extends State<Favorites> {
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar
-            Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '9:41',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: textDark,
+            // Sembunyikan status bar tiruan saat landscape agar layar tidak sempit
+            if (!isLandscape)
+              Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '9:41',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: textDark,
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.wifi, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.battery_full, size: 16, color: textDark),
-                    ],
-                  ),
-                ],
+                    Row(
+                      children: [
+                        Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.wifi, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.battery_full, size: 16, color: textDark),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             // Top bar
             Container(
-              height: 52,
+              height: isLandscape ? 44 : 52,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,8 +128,8 @@ class _FavoritesState extends State<Favorites> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 38,
+                      height: 38,
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -147,13 +146,12 @@ class _FavoritesState extends State<Favorites> {
                       letterSpacing: -0.4,
                     ),
                   ),
-                  // M06: Stack + Positioned untuk Badge jumlah favorit
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 38,
+                        height: 38,
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -186,22 +184,21 @@ class _FavoritesState extends State<Favorites> {
               ),
             ),
 
-            // Content dengan M07 LayoutBuilder (Adaptive UI)
+            // Content dengan LayoutBuilder (Adaptive UI)
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Jika layar lebar / landscape (>= 600px), gunakan 2 kolom GridView
                   final bool useGrid = constraints.maxWidth >= 600 || isLandscape;
 
                   return SingleChildScrollView(
                     padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth > 800 ? screenWidth * 0.1 : 20,
+                      horizontal: screenWidth > 900 ? screenWidth * 0.08 : 20,
                       vertical: 12,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // M06: CAROUSEL BANNER (PageView.builder + Dot Indicator)
+                        // Carousel Banner
                         Container(
                           height: 76,
                           decoration: BoxDecoration(
@@ -257,7 +254,6 @@ class _FavoritesState extends State<Favorites> {
                                   );
                                 },
                               ),
-                              // Indikator titik Carousel
                               Positioned(
                                 bottom: 6,
                                 right: 14,
@@ -313,7 +309,7 @@ class _FavoritesState extends State<Favorites> {
                         ),
                         const SizedBox(height: 12),
 
-                        // M06 & M07: Adaptive ListView.builder (Portrait) vs GridView.builder (Landscape/Tablet)
+                        // Adaptive GridView (iPad/Landscape) vs ListView (Portrait)
                         if (useGrid)
                           GridView.builder(
                             shrinkWrap: true,
@@ -322,7 +318,7 @@ class _FavoritesState extends State<Favorites> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
-                              mainAxisExtent: 122,
+                              mainAxisExtent: 148, // Tinggi dinaikkan agar bebas overflow di iPad
                             ),
                             itemCount: _favoriteItems.length,
                             itemBuilder: (context, index) => _buildFavoriteCard(index),
@@ -342,10 +338,10 @@ class _FavoritesState extends State<Favorites> {
               ),
             ),
 
-            // Bottom Nav
+            // Bottom Nav (lebih ramping saat landscape)
             Container(
-              height: 72,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              height: isLandscape ? 54 : 72,
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: isLandscape ? 4 : 8),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
@@ -355,11 +351,11 @@ class _FavoritesState extends State<Favorites> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildNavItem(icon: Icons.home_outlined, label: 'Home', index: 0),
-                  _buildNavItem(icon: Icons.search, label: 'Search', index: 1),
-                  _buildNavItem(icon: Icons.add_circle_outline, label: 'Sell', index: 2),
-                  _buildNavItem(icon: Icons.local_mall_outlined, label: 'Orders', index: 3),
-                  _buildNavItem(icon: Icons.person_outline, label: 'Profile', index: 4),
+                  _buildNavItem(icon: Icons.home_outlined, label: 'Home', index: 0, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.search, label: 'Search', index: 1, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.add_circle_outline, label: 'Sell', index: 2, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.local_mall_outlined, label: 'Orders', index: 3, isLandscape: isLandscape),
+                  _buildNavItem(icon: Icons.person_outline, label: 'Profile', index: 4, isLandscape: isLandscape),
                 ],
               ),
             ),
@@ -500,6 +496,7 @@ class _FavoritesState extends State<Favorites> {
     required IconData icon,
     required String label,
     required int index,
+    required bool isLandscape,
   }) {
     bool isSelected = _currentBottomNav == index;
     return GestureDetector(
@@ -510,13 +507,13 @@ class _FavoritesState extends State<Favorites> {
           Icon(
             icon,
             color: isSelected ? textDark : textMuted,
-            size: 22,
+            size: isLandscape ? 19 : 22,
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: isLandscape ? 10 : 11,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? textDark : textMuted,
             ),

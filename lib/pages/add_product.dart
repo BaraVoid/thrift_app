@@ -10,7 +10,6 @@ class AddProduct extends StatefulWidget {
 }
 
 class _AddProductState extends State<AddProduct> {
-  // Color palette dari Figma
   static const Color bgColor = Color(0xFFF8F6F0);
   static const Color primaryGreen = Color(0xFF2F3E33);
   static const Color addPhotoBg = Color(0xFFE2EBE0);
@@ -21,7 +20,6 @@ class _AddProductState extends State<AddProduct> {
   static const Color textDark = Color(0xFF1C1C1E);
   static const Color textMuted = Color(0xFF8E8E93);
 
-  // Form controllers & state
   final _titleController = TextEditingController(text: 'Olive Linen Work Jacket');
   final _brandController = TextEditingController(text: 'MUJI');
   String? _selectedCategory = 'Outerwear';
@@ -39,7 +37,6 @@ class _AddProductState extends State<AddProduct> {
     'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500',
   ];
 
-  // Simulasi tambah foto untuk eksplorasi ListView.builder (M06)
   void _addSamplePhoto() {
     if (_photos.length < 6) {
       setState(() {
@@ -50,46 +47,47 @@ class _AddProductState extends State<AddProduct> {
 
   @override
   Widget build(BuildContext context) {
-    // M07: MediaQuery untuk ukuran layar & responsivitas
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar
-            Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              alignment: Alignment.centerRight,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '9:41',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: textDark,
+            // Status bar hanya tampil di Portrait
+            if (!isLandscape)
+              Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                alignment: Alignment.centerRight,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '9:41',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: textDark,
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.wifi, size: 16, color: textDark),
-                      SizedBox(width: 4),
-                      Icon(Icons.battery_full, size: 16, color: textDark),
-                    ],
-                  ),
-                ],
+                    Row(
+                      children: [
+                        Icon(Icons.signal_cellular_alt, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.wifi, size: 16, color: textDark),
+                        SizedBox(width: 4),
+                        Icon(Icons.battery_full, size: 16, color: textDark),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             // Top bar
             Container(
-              height: 52,
+              height: isLandscape ? 44 : 52,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,8 +95,8 @@ class _AddProductState extends State<AddProduct> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 38,
+                      height: 38,
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -115,8 +113,8 @@ class _AddProductState extends State<AddProduct> {
                     ),
                   ),
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 38,
+                    height: 38,
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -127,20 +125,18 @@ class _AddProductState extends State<AddProduct> {
               ),
             ),
 
-            // Listing content dengan M07 LayoutBuilder (Adaptive Constraint)
+            // Listing content dengan LayoutBuilder
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Membatasi lebar form di tablet/desktop agar proporsional (M07)
                   final double horizontalPad =
-                      constraints.maxWidth > 650 ? screenWidth * 0.15 : 20.0;
+                      constraints.maxWidth > 700 ? screenWidth * 0.12 : 20.0;
 
                   return SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPad, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPad, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Photos header
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -160,14 +156,12 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 12),
 
-                        // M06: Horizontal ListView.builder untuk koleksi foto dinamis
                         SizedBox(
                           height: 120,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: _photos.length + 1, // +1 untuk tombol Add Photo
+                            itemCount: _photos.length + 1,
                             itemBuilder: (context, index) {
-                              // Index 0: Tombol Add Photo dengan Custom Dashed Border
                               if (index == 0) {
                                 return GestureDetector(
                                   onTap: _addSamplePhoto,
@@ -208,7 +202,6 @@ class _AddProductState extends State<AddProduct> {
                                 );
                               }
 
-                              // Index berikutnya: Foto yang sudah diunggah
                               final int photoIdx = index - 1;
                               final String url = _photos[photoIdx];
                               return Container(
@@ -222,7 +215,6 @@ class _AddProductState extends State<AddProduct> {
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                                // M06: Stack + Positioned untuk badge COVER & tombol hapus
                                 child: Stack(
                                   children: [
                                     if (photoIdx == 0)
@@ -277,12 +269,10 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Title
                         _buildLabel('Title'),
                         _buildInputField(controller: _titleController),
                         const SizedBox(height: 14),
 
-                        // Brand & Category (M06: Row + Expanded)
                         Row(
                           children: [
                             Expanded(
@@ -333,7 +323,6 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Price
                         _buildLabel('Price'),
                         _buildInputField(
                           controller: _priceController,
@@ -342,7 +331,6 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Item Condition
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -358,7 +346,6 @@ class _AddProductState extends State<AddProduct> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        // M06 & M07: Expanded mencegah RenderFlex overflow pada chip kondisi
                         Row(
                           children: _conditions.asMap().entries.map((entry) {
                             int idx = entry.key;
@@ -397,7 +384,6 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Warning note
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           decoration: BoxDecoration(
@@ -423,7 +409,6 @@ class _AddProductState extends State<AddProduct> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Description & Flaws
                         _buildLabel('Description & Flaws'),
                         _buildInputField(
                           controller: _descController,
@@ -437,10 +422,15 @@ class _AddProductState extends State<AddProduct> {
               ),
             ),
 
-            // Publish action (Sticky Bottom Bar)
+            // Publish action (lebih ramping saat landscape)
             Container(
-              height: 80,
-              padding: const EdgeInsets.only(top: 10, right: 20, bottom: 18, left: 20),
+              height: isLandscape ? 58 : 80,
+              padding: EdgeInsets.only(
+                top: isLandscape ? 8 : 10,
+                right: 20,
+                bottom: isLandscape ? 8 : 18,
+                left: 20,
+              ),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
